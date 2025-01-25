@@ -7,11 +7,14 @@ export function startAPIServer() {
 
   // Leaderboard endpoint
   app.get('/api/leaderboard', (req: Request, res: Response) => {
-    const { repo, avatar } = req.query;
+    const { repo, avatar, authors } = req.query;
     const includeAvatar = avatar !== undefined;
 
     let query: string;
     let params: unknown[] = [];
+    const authorList = authors 
+      ? (authors as string).split(',') 
+      : null;
 
     const fields = includeAvatar
       ? 'username, commit_count, avatar_url'
@@ -23,20 +26,26 @@ export function startAPIServer() {
         SELECT author AS username, COUNT(*) AS commit_count
         ${includeAvatar ? ', MAX(avatar_url) AS avatar_url' : ''}
         FROM commits 
-        WHERE repo = ? 
+        WHERE repo = ?
+          ${authorList ? 'AND author IN (' + authorList.map(() => '?').join(',') + ')' : ''}
           AND author NOT LIKE '%bot%'
         GROUP BY author 
-        ORDER BY commit_count DESC 
+        ORDER BY commit_count DESC
       `;
+
       params = [repo];
+      if (authorList) params.push(...authorList);
     } else {
       // Get global leaderboard
       query = `
         SELECT ${fields}
         FROM leaderboard 
         WHERE username NOT LIKE '%bot%'
+        ${authorList ? 'AND username IN (' + authorList.map(() => '?').join(',') + ')' : ''}
         ORDER BY commit_count DESC 
       `;
+
+      if (authorList) params.push(...authorList);
     }
 
     try {
