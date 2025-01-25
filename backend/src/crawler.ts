@@ -29,9 +29,12 @@ export async function crawlOrganization() {
                     );
 
                     if (author) {
+                        const avatarUrl = commit.author?.avatar_url || null;
+
                         updateLeaderboard.run(
                             author,
                             author,
+                            avatarUrl,
                             1 // Increment count by 1
                         );
                     }

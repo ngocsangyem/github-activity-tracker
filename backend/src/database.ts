@@ -18,6 +18,7 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS leaderboard (
     user_id TEXT PRIMARY KEY,
     username TEXT,
+    avatar_url TEXT,
     commit_count INTEGER DEFAULT 0
   );
 `);
@@ -28,10 +29,11 @@ export const insertCommit = db.prepare(`
 `);
 
 export const updateLeaderboard = db.prepare(`
-  INSERT INTO leaderboard (user_id, username, commit_count)
-  VALUES (?, ?, ?)
+  INSERT INTO leaderboard (user_id, username, avatar_url, commit_count)
+  VALUES (?, ?, ?, ?)
   ON CONFLICT(user_id) DO UPDATE SET
-    commit_count = commit_count + excluded.commit_count
+    commit_count = commit_count + excluded.commit_count,
+    avatar_url = COALESCE(excluded.avatar_url, avatar_url)
 `);
 
 export default db;

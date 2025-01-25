@@ -7,15 +7,21 @@ export function startAPIServer() {
 
   // Leaderboard endpoint
   app.get('/api/leaderboard', (req: Request, res: Response) => {
-    const { repo } = req.query;
+    const { repo, avatar } = req.query;
+    const includeAvatar = avatar !== undefined;
 
     let query: string;
     let params: unknown[] = [];
 
+    const fields = includeAvatar
+      ? 'username, commit_count, avatar_url'
+      : 'username, commit_count';
+
     if (repo) {
       // Get leaderboard for specific repo
       query = `
-        SELECT author AS username, COUNT(*) AS commit_count 
+        SELECT author AS username, COUNT(*) AS commit_count
+        ${includeAvatar ? ', MAX(avatar_url) AS avatar_url' : ''}
         FROM commits 
         WHERE repo = ? 
           AND author NOT LIKE '%bot%'
@@ -26,23 +32,24 @@ export function startAPIServer() {
     } else {
       // Get global leaderboard
       query = `
-        SELECT username, commit_count 
+        SELECT ${fields}
         FROM leaderboard 
         WHERE username NOT LIKE '%bot%'
-        ORDER BY commit_count DESC
+        ORDER BY commit_count DESC 
       `;
     }
 
     try {
-      // First try to get 10 results
-      const initialResults = db.prepare(`${query} LIMIT 10`).all(...params);
+      const results = db.prepare(query).all(...params);
+      const finalResults = results.length >= 5 ? results.slice(0, 10) : results;
       
-      // If less than 5 results, get up to 15 to ensure minimum 5
-      const finalResults = initialResults.length >= 5 
-        ? initialResults 
-        : db.prepare(`${query} LIMIT 15`).all(...params);
+      // Remove avatar_url if not requested
+      if (!includeAvatar) {
+        // TODO: remove type assertion
+        finalResults.forEach(user => delete (user as { avatar_url?: string }).avatar_url);
+      }
   
-      res.json(finalResults.slice(0, 10)); // Always return 5-10 items
+      res.json(finalResults);
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
       res.status(500).json({ error: 'Failed to fetch leaderboard' });
