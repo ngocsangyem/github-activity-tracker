@@ -23,28 +23,28 @@ export function startAPIServer() {
 
   // Commits endpoint
   app.get('/api/commits', (req, res) => {
-    const { repo, author } = req.query;
+    const { repo, author, limit = '10', offset = '0' } = req.query;
 
     if (!repo) {
       res.status(400).json({ error: 'Repository name is required' });
-
       return;
     }
 
     try {
       let query = `
-        SELECT sha, repo, author, date, message 
-        FROM commits 
-        WHERE repo = ?
-      `;
-      const params = [repo as string]; // Explicitly cast repo to string
+      SELECT sha, repo, author, date, message 
+      FROM commits 
+      WHERE repo = ?
+    `;
+      const params = [repo];
 
       if (author) {
         query += ' AND author = ?';
-        params.push(author as string); // Explicitly cast author to string
+        params.push(author);
       }
 
-      query += ' ORDER BY date DESC';
+      query += ' ORDER BY date DESC LIMIT ? OFFSET ?';
+      params.push(limit, offset);
 
       const commits = db.prepare(query).all(...params);
       res.json(commits);
