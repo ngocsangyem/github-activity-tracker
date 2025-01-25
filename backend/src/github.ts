@@ -46,3 +46,20 @@ export async function getRepoCommits(repoName: string) {
     throw error;
   }
 }
+
+// Fetch PRs linked to a commit
+export async function getCommitPRs(repoName: string, commitSha: string) {
+  try {
+    const response = await octokit.rest.repos.listPullRequestsAssociatedWithCommit({
+      owner: config.ORG_NAME ?? '',
+      repo: repoName,
+      commit_sha: commitSha,
+    });
+    return response.data;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error(`Error fetching PRs for commit ${commitSha}:`, error.message);
+    }
+    return [];
+  }
+}

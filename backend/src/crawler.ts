@@ -1,4 +1,4 @@
-import { getOrgRepos, getRepoCommits } from './github.js';
+import { getOrgRepos, getRepoCommits, getCommitPRs } from './github.js';
 import db, { insertCommit, updateLeaderboard } from './database.js';
 
 export async function crawlOrganization() {
@@ -11,16 +11,21 @@ export async function crawlOrganization() {
 
             const commits = await getRepoCommits(repo.name);
 
-            const tx = db.transaction(() => {
+            const tx = db.transaction(async () => {
                 for (const commit of commits) {
                     const author = commit.author?.login || commit.commit.author?.name || null;
+
+                    // Fetch PRs for this commit
+                    const prs = await getCommitPRs(repo.name, commit.sha);
+                    const prUrl = prs.length > 0 ? prs[0].html_url : null; // Use the first PR URL
 
                     insertCommit.run(
                         commit.sha,
                         repo.name,
                         author,
                         commit.commit.author?.date,
-                        commit.commit.message
+                        commit.commit.message,
+                        prUrl
                     );
 
                     if (author) {
@@ -34,6 +39,8 @@ export async function crawlOrganization() {
             });
 
             tx();
+
+            console.log(`Processed ${commits.length} commits for ${repo.name}.`);
         }
     } catch (error) {
         if (error instanceof Error) {

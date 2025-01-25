@@ -32,7 +32,7 @@ export function startAPIServer() {
 
     try {
       let query = `
-      SELECT sha, repo, author, date, message 
+      SELECT sha, repo, author, date, message, pr_url 
       FROM commits 
       WHERE repo = ?
     `;

@@ -5,13 +5,14 @@ const db = new Database(config.DB_PATH);
 
 // Initialize tables
 db.exec(`
-  CREATE TABLE IF NOT EXISTS commits (
+   CREATE TABLE IF NOT EXISTS commits (
     id INTEGER PRIMARY KEY,
     sha TEXT UNIQUE,
     repo TEXT,
     author TEXT,
     date DATETIME,
-    message TEXT
+    message TEXT,
+    pr_url TEXT
   );
   
   CREATE TABLE IF NOT EXISTS leaderboard (
@@ -22,8 +23,8 @@ db.exec(`
 `);
 
 export const insertCommit = db.prepare(`
-  INSERT OR IGNORE INTO commits (sha, repo, author, date, message)
-  VALUES (?, ?, ?, ?, ?)
+  INSERT OR IGNORE INTO commits (sha, repo, author, date, message, pr_url)
+  VALUES (?, ?, ?, ?, ?, ?)
 `);
 
 export const updateLeaderboard = db.prepare(`
