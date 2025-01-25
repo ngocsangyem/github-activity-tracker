@@ -1,9 +1,12 @@
 import express, { Request, Response } from 'express'; // Import Request and Response types
 import db from './database.js';
+import cors from 'cors';
 
 export function startAPIServer() {
   const app = express();
   const port = 3000;
+
+  app.use(cors());
 
   // Leaderboard endpoint
   app.get('/api/leaderboard', (req: Request, res: Response) => {
