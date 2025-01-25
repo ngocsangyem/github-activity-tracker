@@ -19,26 +19,27 @@ export function startAPIServer() {
       ? (authors as string).split(',') 
       : null;
 
-    const fields = includeAvatar
-      ? 'username, commit_count, avatar_url'
-      : 'username, commit_count';
-
     if (repo) {
       // Get leaderboard for specific repo
       query = `
-        SELECT author AS username, COUNT(*) AS commit_count
-        ${includeAvatar ? ', MAX(avatar_url) AS avatar_url' : ''}
-        FROM commits 
-        WHERE repo = ?
-          ${authorList ? 'AND author IN (' + authorList.map(() => '?').join(',') + ')' : ''}
-          AND author NOT LIKE '%bot%'
-        GROUP BY author 
+        SELECT c.author AS username, COUNT(*) AS commit_count
+        ${includeAvatar ? ', l.avatar_url' : ''}
+        FROM commits c
+        LEFT JOIN leaderboard l ON c.author = l.username
+        WHERE c.repo = ?
+          ${authorList ? 'AND c.author IN (' + authorList.map(() => '?').join(',') + ')' : ''}
+          AND c.author NOT LIKE '%bot%'
+        GROUP BY c.author
         ORDER BY commit_count DESC
       `;
 
       params = [repo];
       if (authorList) params.push(...authorList);
     } else {
+      const fields = includeAvatar 
+        ? 'username, commit_count, avatar_url'
+        : 'username, commit_count';
+
       // Get global leaderboard
       query = `
         SELECT ${fields}
