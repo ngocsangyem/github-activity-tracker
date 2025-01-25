@@ -66,6 +66,7 @@ DB_PATH=commits.db
 - Query Parameters:
   - `repo` (optional): Filter leaderboard by repository name
   - `avatar` (optional): Include avatar URLs (any value)
+  - `authors` (optional): Comma-separated list of usernames to filter (e.g., `john,sam`)
 - Description: Returns the top 10 users by commit count.
 - Response:
 
@@ -149,4 +150,9 @@ Contributions are welcome! Please follow these steps:
 
 ## License
 This project is licensed under the MIT License. See the LICENSE file for details.
+
+## Todo
+- Remove type assertion
+- Define types
+- Optimize request
 
