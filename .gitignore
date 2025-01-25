@@ -137,3 +137,6 @@ dist
 
 # Mac files
 .DS_Store
+
+# data
+commits.db

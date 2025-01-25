@@ -63,6 +63,8 @@ DB_PATH=commits.db
 
 - URL: /api/leaderboard
 - Method: GET
+- Query Parameters:
+  - `repo` (optional): Filter leaderboard by repository name
 - Description: Returns the top 10 users by commit count.
 - Response:
 
@@ -84,10 +86,10 @@ DB_PATH=commits.db
 - URL: /api/commits
 - Method: GET
 - Query Parameters:
-    - repo (required): The name of the repository.
-    - author (optional): The username of the commit author.
-    - limit (optional): Number of commits to return (default: 10).
-    - offset (optional): Number of commits to skip (default: 0).
+  - `repo` (required): The name of the repository.
+  - `author` (optional): The username of the commit author.
+  - `limit` (optional): Number of commits to return (default: 10).
+  - `offset` (optional): Number of commits to skip (default: 0).
 - Description: Returns commits for a specific repository, optionally filtered by author.
 - Response:
 

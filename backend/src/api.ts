@@ -7,18 +7,46 @@ export function startAPIServer() {
 
   // Leaderboard endpoint
   app.get('/api/leaderboard', (req: Request, res: Response) => {
-    const leaderboard = db
-      .prepare(
-        `
-      SELECT username, commit_count 
-      FROM leaderboard 
-      ORDER BY commit_count DESC
-      LIMIT 10
-    `
-      )
-      .all();
+    const { repo } = req.query;
 
-    res.json(leaderboard);
+    let query: string;
+    let params: unknown[] = [];
+
+    if (repo) {
+      // Get leaderboard for specific repo
+      query = `
+        SELECT author AS username, COUNT(*) AS commit_count 
+        FROM commits 
+        WHERE repo = ? 
+          AND author NOT LIKE '%bot%'
+        GROUP BY author 
+        ORDER BY commit_count DESC 
+      `;
+      params = [repo];
+    } else {
+      // Get global leaderboard
+      query = `
+        SELECT username, commit_count 
+        FROM leaderboard 
+        WHERE username NOT LIKE '%bot%'
+        ORDER BY commit_count DESC
+      `;
+    }
+
+    try {
+      // First try to get 10 results
+      const initialResults = db.prepare(`${query} LIMIT 10`).all(...params);
+      
+      // If less than 5 results, get up to 15 to ensure minimum 5
+      const finalResults = initialResults.length >= 5 
+        ? initialResults 
+        : db.prepare(`${query} LIMIT 15`).all(...params);
+  
+      res.json(finalResults.slice(0, 10)); // Always return 5-10 items
+    } catch (error) {
+      console.error('Error fetching leaderboard:', error);
+      res.status(500).json({ error: 'Failed to fetch leaderboard' });
+    }
   });
 
   // Commits endpoint
@@ -35,6 +63,7 @@ export function startAPIServer() {
       SELECT sha, repo, author, date, message, pr_url 
       FROM commits 
       WHERE repo = ?
+        AND author NOT LIKE '%bot%'
     `;
       const params = [repo];
 
