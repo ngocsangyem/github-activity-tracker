@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES2020", // Modern JavaScript features
+    "module": "NodeNext", // Use Node.js ESM
+    "moduleResolution": "NodeNext", // Use Node.js module resolution
+    "outDir": "./dist", // Output directory for compiled files
+    "rootDir": "./src", // Source directory
+    "strict": true, // Enable strict type checking
+    "esModuleInterop": true, // Improve compatibility with ESM
+    "skipLibCheck": true, // Skip library checks for faster builds
+    "resolveJsonModule": true // Allow importing JSON files
+  },
+  "include": ["src/**/*"] // Include all files in the src directory
+}

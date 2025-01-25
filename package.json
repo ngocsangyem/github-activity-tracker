@@ -1,0 +1,29 @@
+{
+  "name": "github-activity-tracker",
+  "version": "0.0.1",
+  "description": "Tracking commit activity",
+  "keywords": [
+    "nodejs",
+    "vuejs",
+    "typescript",
+    "github",
+    "tracking",
+    "commit",
+    "javascript"
+  ],
+  "homepage": "https://github.com/ngocsangyem/github-activity-tracker#readme",
+  "bugs": {
+    "url": "https://github.com/ngocsangyem/github-activity-tracker/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ngocsangyem/github-activity-tracker.git"
+  },
+  "license": "MIT",
+  "author": "ngocsangyem",
+  "type": "commonjs",
+  "main": "main.ts",
+  "scripts": {
+    "test": "yarn test"
+  }
+}
