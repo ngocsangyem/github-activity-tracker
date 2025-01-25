@@ -65,6 +65,7 @@ DB_PATH=commits.db
 - Method: GET
 - Query Parameters:
   - `repo` (optional): Filter leaderboard by repository name
+  - `avatar` (optional): Include avatar URLs (any value)
 - Description: Returns the top 10 users by commit count.
 - Response:
 
@@ -73,10 +74,12 @@ DB_PATH=commits.db
   {
     "username": "user1",
     "commit_count": 42
+    "avatar_url": "https://avatars.githubusercontent.com/u/123?v=4"
   },
   {
     "username": "user2",
-    "commit_count": 35
+    "commit_count": 35,
+    "avatar_url": null
   }
 ]
 ```
