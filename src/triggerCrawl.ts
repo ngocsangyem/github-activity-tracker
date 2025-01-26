@@ -11,8 +11,9 @@ const args = minimist(process.argv.slice(2));
   // Optional: Reset leaderboard before crawling
   const forceReset = args.reset || false;
   if (forceReset) {
-    console.log('Resetting leaderboard...');
+    console.log('Resetting database...');
     db.prepare('DELETE FROM leaderboard').run();
+    db.prepare('DELETE FROM commits').run();
   }
 
   // Optional: Use a specific date for crawling
