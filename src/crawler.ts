@@ -6,8 +6,9 @@ function getTodayDate() {
     return new Date().toISOString().split('T')[0];
 }
 
-export async function crawlOrganization() {
-    const today = getTodayDate();
+export async function crawlOrganization(specificDate?: string) {
+    const today = specificDate || getTodayDate(); // Use specific date if provided
+    console.log(`Crawling data for date: ${today}`);
 
     try {
         const repos = await getOrgRepos();
@@ -22,18 +23,18 @@ export async function crawlOrganization() {
             console.log(`Fetching commits for repository: ${repo.name}`);
             const commits = await getRepoCommits(repo.name);
 
-            // Filter commits for today
-            const todayCommits = commits.filter(commit =>
+            // Filter commits for the specified date
+            const filteredCommits = commits.filter(commit =>
                 commit.commit.author?.date?.startsWith(today)
             );
 
-            if (todayCommits.length === 0) {
-                console.log(`No commits today for ${repo.name}`);
+            if (filteredCommits.length === 0) {
+                console.log(`No commits on ${today} for ${repo.name}`);
                 continue;
             }
 
             const tx = db.transaction(() => {
-                for (const commit of todayCommits) {
+                for (const commit of filteredCommits) {
                     const author = commit.author?.login || commit.commit.author?.name || null;
 
                     insertCommit.run(
@@ -57,7 +58,7 @@ export async function crawlOrganization() {
             });
 
             tx();
-            console.log(`Processed ${todayCommits.length} commits for ${repo.name}.`);
+            console.log(`Processed ${filteredCommits.length} commits for ${repo.name}.`);
         }
     } catch (error) {
         console.error('Crawl failed:', error);

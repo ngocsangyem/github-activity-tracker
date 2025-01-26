@@ -27,7 +27,8 @@
     "start": "tsx src/index.ts",
     "dev": "nodemon --exec tsx src/index.ts",
     "build": "tsc",
-    "serve": "node dist/index.js"
+    "serve": "node dist/index.js",
+    "trigger-crawl": "tsx src/triggerCrawl.ts"
   },
   "dependencies": {
     "@octokit/rest": "^21.1.0",
@@ -41,7 +42,9 @@
     "@types/better-sqlite3": "^7.6.12",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
+    "@types/minimist": "^1.2.5",
     "@types/node": "^22.10.10",
+    "minimist": "^1.2.8",
     "nodemon": "^3.1.9",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.2",
