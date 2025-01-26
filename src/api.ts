@@ -22,10 +22,17 @@ export function startAPIServer() {
     if (repo) {
       // Get leaderboard for specific repo
       query = `
-        SELECT c.author AS username, COUNT(*) AS commit_count
-        ${includeAvatar ? ', l.avatar_url' : ''}
+        SELECT 
+          c.author AS username, 
+          COUNT(*) AS commit_count,
+          MAX(c.date) AS latest_commit_date,
+          c2.message AS latest_commit_message
+          ${includeAvatar ? ', l.avatar_url' : ''}
         FROM commits c
         LEFT JOIN leaderboard l ON c.author = l.username
+        LEFT JOIN commits c2 ON c.author = c2.author AND c2.date = (
+          SELECT MAX(date) FROM commits WHERE author = c.author AND repo = c.repo
+        )
         WHERE c.repo = ?
           ${authorList ? 'AND c.author IN (' + authorList.map(() => '?').join(',') + ')' : ''}
           AND c.author NOT LIKE '%bot%'
@@ -37,16 +44,23 @@ export function startAPIServer() {
       if (authorList) params.push(...authorList);
     } else {
       const fields = includeAvatar 
-        ? 'username, commit_count, avatar_url'
-        : 'username, commit_count';
+        ? 'username, commit_count, avatar_url, latest_commit_date, latest_commit_message'
+        : 'username, commit_count, latest_commit_date, latest_commit_message';
 
       // Get global leaderboard
       query = `
-        SELECT ${fields}
-        FROM leaderboard 
-        WHERE username NOT LIKE '%bot%'
-        ${authorList ? 'AND username IN (' + authorList.map(() => '?').join(',') + ')' : ''}
-        ORDER BY commit_count DESC 
+       SELECT 
+        l.username,
+        l.commit_count,
+        ${includeAvatar ? 'l.avatar_url,' : ''}
+          MAX(c.date) AS latest_commit_date,
+          c.message AS latest_commit_message
+        FROM leaderboard l
+        LEFT JOIN commits c ON l.username = c.author
+        WHERE l.username NOT LIKE '%bot%'
+          ${authorList ? 'AND l.username IN (' + authorList.map(() => '?').join(',') + ')' : ''}
+        GROUP BY l.username
+        ORDER BY l.commit_count DESC
       `;
 
       if (authorList) params.push(...authorList);
