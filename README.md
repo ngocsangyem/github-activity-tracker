@@ -66,13 +66,13 @@ yarn trigger-crawl
 Crawl for a Specific Date
 
 ```sh
-yarn trigger-crawl-date -- --date=2024-01-15
+yarn trigger-crawl -- --date=2024-01-15
 ```
 
 Reset database and Crawl for a Specific Date
 
 ```sh
-npm run trigger-crawl-date -- --date=2024-01-15 --reset
+yarn trigger-crawl -- --date=2024-01-15 --reset
 ```
 
 ## API Documentation
