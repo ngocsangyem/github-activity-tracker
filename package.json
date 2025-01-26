@@ -21,7 +21,7 @@
   },
   "license": "MIT",
   "author": "ngocsangyem",
-  "type": "commonjs",
+  "type": "module",
   "main": "main.ts",
   "scripts": {
     "start": "tsx src/index.ts",
