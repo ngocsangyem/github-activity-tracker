@@ -75,12 +75,16 @@ DB_PATH=commits.db
   {
     "username": "user1",
     "commit_count": 42
-    "avatar_url": "https://avatars.githubusercontent.com/u/123?v=4"
+    "avatar_url": "https://avatars.githubusercontent.com/u/123?v=4",
+    "latest_commit_message": "this is a message",
+    "latest_commit_date": "2025-01-24T12:46:32Z",
   },
   {
     "username": "user2",
     "commit_count": 35,
-    "avatar_url": null
+    "avatar_url": null,
+    "latest_commit_message": "this is a message 2",
+    "latest_commit_date": "2024-01-24T12:46:32Z",
   }
 ]
 ```
