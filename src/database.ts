@@ -5,7 +5,7 @@ const db = new Database(config.DB_PATH);
 
 // Initialize tables
 db.exec(`
-   CREATE TABLE IF NOT EXISTS commits (
+  CREATE TABLE IF NOT EXISTS commits (
     id INTEGER PRIMARY KEY,
     sha TEXT UNIQUE,
     repo TEXT,

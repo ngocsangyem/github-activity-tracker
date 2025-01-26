@@ -1,23 +1,40 @@
-import { getOrgRepos, getRepoCommits, getCommitPRs } from './github.js';
+import { getOrgRepos, getRepoCommits } from './github.js';
 import db, { insertCommit, updateLeaderboard } from './database.js';
 
+// Get today's date in YYYY-MM-DD format
+function getTodayDate() {
+    return new Date().toISOString().split('T')[0];
+}
+
 export async function crawlOrganization() {
+    const today = getTodayDate();
+
     try {
         const repos = await getOrgRepos();
+        console.log(`Found ${repos.length} repositories.`);
 
         for (const repo of repos) {
-            // Skip archived repos (optional)
-            if (repo.archived) continue;
+            if (repo.archived) {
+                console.log(`Skipping archived repository: ${repo.name}`);
+                continue;
+            }
 
+            console.log(`Fetching commits for repository: ${repo.name}`);
             const commits = await getRepoCommits(repo.name);
 
-            const tx = db.transaction(async () => {
-                for (const commit of commits) {
-                    const author = commit.author?.login || commit.commit.author?.name || null;
+            // Filter commits for today
+            const todayCommits = commits.filter(commit =>
+                commit.commit.author?.date?.startsWith(today)
+            );
 
-                    // Fetch PRs for this commit
-                    const prs = await getCommitPRs(repo.name, commit.sha);
-                    const prUrl = prs.length > 0 ? prs[0].html_url : null; // Use the first PR URL
+            if (todayCommits.length === 0) {
+                console.log(`No commits today for ${repo.name}`);
+                continue;
+            }
+
+            const tx = db.transaction(() => {
+                for (const commit of todayCommits) {
+                    const author = commit.author?.login || commit.commit.author?.name || null;
 
                     insertCommit.run(
                         commit.sha,
@@ -25,31 +42,24 @@ export async function crawlOrganization() {
                         author,
                         commit.commit.author?.date,
                         commit.commit.message,
-                        prUrl
+                        commit.author?.avatar_url || null
                     );
 
                     if (author) {
-                        const avatarUrl = commit.author?.avatar_url || null;
-
                         updateLeaderboard.run(
                             author,
                             author,
-                            avatarUrl,
-                            1 // Increment count by 1
+                            commit.author?.avatar_url || null,
+                            1
                         );
                     }
                 }
             });
 
             tx();
-
-            console.log(`Processed ${commits.length} commits for ${repo.name}.`);
+            console.log(`Processed ${todayCommits.length} commits for ${repo.name}.`);
         }
     } catch (error) {
-        if (error instanceof Error) {
-            console.error('Crawl failed:', error.message);
-        } else {
-            console.error('An unknown error occurred during the crawl');
-        }
+        console.error('Crawl failed:', error);
     }
 }

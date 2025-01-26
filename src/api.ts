@@ -34,6 +34,7 @@ export function startAPIServer() {
           SELECT MAX(date) FROM commits WHERE author = c.author AND repo = c.repo
         )
         WHERE c.repo = ?
+          AND DATE(c.date) = DATE('now')
           ${authorList ? 'AND c.author IN (' + authorList.map(() => '?').join(',') + ')' : ''}
           AND c.author NOT LIKE '%bot%'
         GROUP BY c.author
@@ -49,15 +50,16 @@ export function startAPIServer() {
 
       // Get global leaderboard
       query = `
-       SELECT 
-        l.username,
-        l.commit_count,
-        ${includeAvatar ? 'l.avatar_url,' : ''}
+        SELECT 
+          l.username,
+          l.commit_count,
+          ${includeAvatar ? 'l.avatar_url,' : ''}
           MAX(c.date) AS latest_commit_date,
           c.message AS latest_commit_message
         FROM leaderboard l
         LEFT JOIN commits c ON l.username = c.author
         WHERE l.username NOT LIKE '%bot%'
+          AND DATE(c.date) = DATE('now')
           ${authorList ? 'AND l.username IN (' + authorList.map(() => '?').join(',') + ')' : ''}
         GROUP BY l.username
         ORDER BY l.commit_count DESC
@@ -69,12 +71,6 @@ export function startAPIServer() {
     try {
       const results = db.prepare(query).all(...params);
       const finalResults = results.length >= 5 ? results.slice(0, 10) : results;
-      
-      // Remove avatar_url if not requested
-      if (!includeAvatar) {
-        // TODO: remove type assertion
-        finalResults.forEach(user => delete (user as { avatar_url?: string }).avatar_url);
-      }
   
       res.json(finalResults);
     } catch (error) {
@@ -84,7 +80,7 @@ export function startAPIServer() {
   });
 
   // Commits endpoint
-  app.get('/api/commits', (req, res) => {
+  app.get('/api/commits', (req: Request, res: Response) => {
     const { repo, author, limit = '10', offset = '0' } = req.query;
 
     if (!repo) {
