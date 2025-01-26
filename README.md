@@ -55,6 +55,26 @@ ORG_NAME=your_organization_name
 DB_PATH=commits.db
 ```
 
+4. Manual crawl database (test purpose)
+
+Crawl for Today
+
+```sh
+yarn trigger-crawl
+```
+
+Crawl for a Specific Date
+
+```sh
+yarn trigger-crawl-date -- --date=2024-01-15
+```
+
+Reset database and Crawl for a Specific Date
+
+```sh
+npm run trigger-crawl-date -- --date=2024-01-15 --reset
+```
+
 ## API Documentation
 
 ### Endpoints
